@@ -45,4 +45,44 @@ class MarketController extends Controller
 
     }
 
+    public function show($id){
+        $market = Market::find($id);
+        return view('markets.show')
+            ->withTitle('Detalle del Market')
+            ->with('market', $market);
+    }
+
+    public function edit($id){
+        $market = Market::findOrFail($id);
+        return view('markets.edit')
+            ->withTitle('Editar Market')
+            ->with('market', $market);
+    }
+
+    public function update(Request $request, $id){
+        $market = Market::find($id);
+        $input = $request->all();
+        if ($market->validate($input)) {
+            $market->name = $request->name;
+            $market->description = $request->description;
+            $market->status = (bool)$request->status;
+            $market->save();
+
+            Session::flash('status_message','Market editado.');
+            return redirect('markets');
+        }
+        return back()->withInput($input)->withErrors($market->errors);
+    }
+
+    public function destroy($id){
+        try {
+            $market = Market::findOrFail($id);
+            $market->delete();
+            $status_message = 'Market eliminado';
+        } catch (ModelNotFoundException $e) {
+            $status_message = 'No hay market con ese id.';
+        }
+        Session::flash('status_message', $status_message);
+        return redirect('markets');
+    }
 }
